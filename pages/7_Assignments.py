@@ -2,204 +2,202 @@ import streamlit as st
 import pandas as pd
 from db import get_connection
 
-st.title("🧩 Assignment Penjahit")
+st.set_page_config(page_title="Assignments", page_icon="📋", layout="wide")
+st.title("📋 Distribusi Tugas & Monitoring")
+st.markdown("Pantau beban kerja penjahit dan kelola pembagian tugas produksi.")
 
 conn = get_connection()
 conn.row_factory = None
 c = conn.cursor()
 
 # =========================
-# LOAD DATA
+# LOAD DATA (COMMON)
 # =========================
-projects = c.execute("""
-    SELECT id, project_name
-    FROM projects
-    WHERE status='ongoing'
-""").fetchall()
+# Data Project Ongoing (untuk dropdown & validasi)
+projects = c.execute("SELECT id, project_name, amount FROM projects WHERE status='ongoing'").fetchall()
+proj_map = {p[0]: f"{p[1]} (Target: {p[2]} pcs)" for p in projects}
+proj_amount_map = {p[0]: p[2] for p in projects}
 
-tailors = c.execute("""
-    SELECT id, name, status
-    FROM tailors
-""").fetchall()
-
-project_map = {p[0]: p[1] for p in projects}
-tailor_map = {t[0]: t[1] for t in tailors}
-
+# Data Tailor (untuk dropdown)
+tailors = c.execute("SELECT id, name, status FROM tailors").fetchall()
 idle_tailors = [t for t in tailors if t[2] == 'idle']
 
+# Data Assignment Lengkap (untuk Tabel Utama)
+query_main = """
+SELECT 
+    a.id,
+    p.project_name AS "Project",
+    t.name AS "Penjahit",
+    a.amount_assigned AS "Jml Pcs",
+    a.status AS "Status",
+    a.payment_amount AS "Upah",
+    p.id as project_id,
+    t.id as tailor_id
+FROM assignments a
+JOIN projects p ON p.id = a.project_id
+JOIN tailors t ON t.id = a.tailor_id
+ORDER BY a.id DESC
+"""
+df_assign = pd.read_sql_query(query_main, conn)
+
 # =========================
-# ADD ASSIGNMENT
+# TABS LAYOUT
 # =========================
-with st.expander("➕ Assign Penjahit ke Project", expanded=False):
-    if not projects or not idle_tailors:
-        st.warning("Butuh project ongoing dan penjahit idle.")
-    else:
-        with st.form("add_assignment_form"):
-            project_id = st.selectbox(
-                "Project",
-                [p[0] for p in projects],
-                format_func=lambda x: f"ID {x} - {project_map[x]}"
-            )
+tab1, tab2 = st.tabs(["📊 Monitor Beban Kerja", "📝 Kelola Penugasan"])
 
-            tailor_id = st.selectbox(
-                "Penjahit (Idle)",
-                [t[0] for t in idle_tailors],
-                format_func=lambda x: f"ID {x} - {tailor_map[x]}"
-            )
-
-            amount_assigned = st.number_input(
-                "Jumlah Pakaian",
-                min_value=1,
-                step=1
-            )
-
-            submitted = st.form_submit_button("Assign")
-
-            if submitted:
-                # ambil jumlah project
-                c.execute("""
-                    SELECT amount FROM projects WHERE id=?
-                """, (project_id,))
-                project_amount = c.fetchone()[0]
-
-                # total assigned saat ini
-                c.execute("""
-                    SELECT COALESCE(SUM(amount_assigned), 0)
-                    FROM assignments
-                    WHERE project_id=?
-                """, (project_id,))
-                current_assigned = c.fetchone()[0]
-
-                is_valid = True
-                if current_assigned + amount_assigned > project_amount:
-                    st.error(
-                        f"Jumlah assignment melebihi order project "
-                        f"({current_assigned} + {amount_assigned} > {project_amount})"
-                    )
-                    is_valid = False
+# ------------------------------------------------------------------
+# TAB 1: DASHBOARD ANALITIK
+# ------------------------------------------------------------------
+with tab1:
+    # --- Metrics Row ---
+    col1, col2, col3 = st.columns(3)
+    
+    # Hitung Statistik
+    active_items = df_assign[df_assign["Status"] == "assigned"]["Jml Pcs"].sum()
+    active_workers = len(df_assign[df_assign["Status"] == "assigned"]["Penjahit"].unique())
+    ongoing_count = len(projects)
+    
+    col1.metric("👔 Sedang Dijahit", f"{active_items} Pcs")
+    col2.metric("🧵 Penjahit Aktif", f"{active_workers} Orang")
+    col3.metric("📦 Project Berjalan", f"{ongoing_count} Project")
+    
+    st.divider()
+    
+    # --- Charts Row ---
+    c1, c2 = st.columns([2, 1])
+    
+    with c1:
+        st.subheader("🏆 Top Penjahit Tersibuk (Sedang Bekerja)")
+        # Filter hanya yang status assigned
+        df_active = df_assign[df_assign["Status"] == "assigned"]
+        if not df_active.empty:
+            # Group by Penjahit dan Sum Jumlah Pcs
+            busy_tailors = df_active.groupby("Penjahit")["Jml Pcs"].sum().sort_values(ascending=False).head(10)
+            st.bar_chart(busy_tailors, color="#FF6384", horizontal=True)
+        else:
+            st.info("Saat ini tidak ada penjahit yang sedang memegang pekerjaan (active).")
             
-                if is_valid == True:
-                    c.execute("""
-                        INSERT INTO assignments
-                        (project_id, tailor_id, amount_assigned, status)
-                        VALUES (?, ?, ?, 'assigned')
-                    """, (
-                        project_id,
-                        tailor_id,
-                        amount_assigned
-                    ))
+    with c2:
+        st.subheader("📊 Progress Project")
+        # Visualisasi: Berapa persen project yang sudah dibagikan ke penjahit?
+        if projects:
+            proj_progress = []
+            for pid, pname, ptotal in projects:
+                # Hitung total assigned untuk project ini
+                assigned = df_assign[df_assign["project_id"] == pid]["Jml Pcs"].sum()
+                # Hitung sisa
+                remaining = max(0, ptotal - assigned)
+                proj_progress.append({"Project": pname, "Sudah Dibagi": assigned, "Belum Dibagi": remaining})
+            
+            df_prog = pd.DataFrame(proj_progress).set_index("Project")
+            # Stacked Bar Chart (Hijau = Assigned, Abu = Sisa)
+            st.bar_chart(df_prog, color=["#4CAF50", "#E0E0E0"], stack=True)
+        else:
+            st.info("Tidak ada project ongoing.")
 
-                    # ubah status penjahit
-                    c.execute("""
-                        UPDATE tailors SET status='working'
-                        WHERE id=?
-                    """, (tailor_id,))
+# ------------------------------------------------------------------
+# TAB 2: MANAJEMEN PENUGASAN
+# ------------------------------------------------------------------
+with tab2:
+    col_form, col_list = st.columns([1, 2])
+    
+    # --- 1. FORM ASSIGNMENT ---
+    with col_form:
+        st.subheader("➕ Beri Tugas Baru")
+        
+        # Cek Project DULU sebelum membuat form
+        if not projects:
+            st.warning("⚠️ Tidak ada project ongoing.")
+            st.info("Silakan buat project baru dulu di menu 'Projects'.")
+        else:
+            # Jika project ada, baru buat form
+            with st.form("assign_form"):
+                sel_proj_id = st.selectbox("Pilih Project", list(proj_map.keys()), format_func=lambda x: proj_map[x])
+                
+                # Filter penjahit idle
+                idle_opts = {t[0]: t[1] for t in idle_tailors}
+                
+                if idle_opts:
+                    sel_tailor_id = st.selectbox("Pilih Penjahit (Idle)", list(idle_opts.keys()), format_func=lambda x: idle_opts[x])
+                else:
+                    st.warning("Semua penjahit sedang sibuk!")
+                    sel_tailor_id = None
+                
+                amount = st.number_input("Jumlah Pcs", min_value=1, step=1)
+                
+                # Tombol submit aman ada di sini
+                submitted = st.form_submit_button("Assign Tugas")
+                
+                if submitted:
+                    if not sel_tailor_id:
+                        st.error("Pilih penjahit terlebih dahulu (atau semua sedang sibuk).")
+                    else:
+                        # Validasi Kuota Project
+                        curr_assigned = c.execute("SELECT COALESCE(SUM(amount_assigned), 0) FROM assignments WHERE project_id=?", (sel_proj_id,)).fetchone()[0]
+                        proj_total = proj_amount_map[sel_proj_id]
+                        
+                        if curr_assigned + amount > proj_total:
+                            st.error(f"❌ Over capacity! Sisa kuota project ini hanya: {proj_total - curr_assigned} pcs.")
+                        else:
+                            # 1. Insert Assignment
+                            c.execute("INSERT INTO assignments (project_id, tailor_id, amount_assigned, status) VALUES (?, ?, ?, 'assigned')", (sel_proj_id, sel_tailor_id, amount))
+                            
+                            # 2. Update Status Penjahit -> Working
+                            c.execute("UPDATE tailors SET status='working' WHERE id=?", (sel_tailor_id,))
+                            
+                            conn.commit()
+                            st.success(f"Tugas berhasil diberikan kepada penjahit ID {sel_tailor_id}!")
+                            st.rerun()
 
-                    conn.commit()
-                    st.success("Penjahit berhasil di-assign.")
-                    st.rerun()
-
-# =========================
-# LIST ASSIGNMENTS
-# =========================
-st.subheader("📋 Daftar Assignment")
-
-df = pd.read_sql_query("""
-    SELECT
-        a.id,
-        a.project_id,
-        t.id AS tailor_id,
-        p.project_name AS Project,
-        t.name AS Penjahit,
-        a.amount_assigned AS Jumlah,
-        a.status AS Status,
-        a.payment_amount AS Upah
-    FROM assignments a
-    JOIN projects p ON p.id = a.project_id
-    JOIN tailors t ON t.id = a.tailor_id
-    ORDER BY a.id DESC
-""", conn)
-
-if df.empty:
-    st.info("Belum ada assignment.")
-    st.stop()
-
-st.dataframe(df, use_container_width=True)
-
-
-# UPDATE ASSIGNMENTS
-
-st.subheader("✏️ Edit Assignment")
-
-selected_id = st.selectbox(
-    "Pilih Assignment",
-    df["id"],
-    format_func=lambda x: f"ID {x} - {df[df['id']==x]['Penjahit'].values[0]}"
-)
-
-assignment = df[df["id"] == selected_id].iloc[0]
-
-with st.form("edit_assignment_form"):
-    new_amount = st.number_input(
-        "Jumlah Pakaian",
-        min_value=1,
-        value=int(assignment["Jumlah"])
-    )
-
-    status = st.selectbox(
-        "Status",
-        ["assigned", "submitted", "paid"],
-        index=["assigned", "submitted", "paid"].index(assignment["Status"])
-    )
-
-    payment = st.number_input(
-        "Upah",
-        min_value=0,
-        value=0 if pd.isna(assignment["Upah"]) else int(assignment["Upah"])
-    )
-
-    submitted = st.form_submit_button("Update Assignment")
-
-    if submitted:
-        is_valid = True
-
-        # VALIDASI TOTAL
-        c.execute("""
-            SELECT COALESCE(SUM(amount_assigned), 0)
-            FROM assignments
-            WHERE project_id=? AND id!=?
-        """, (assignment["project_id"], selected_id))
-        other_assigned = c.fetchone()[0]
-
-        # st.write("DEBUG project_id:", assignment["project_id"])
-        c.execute("""
-            SELECT amount FROM projects WHERE id=?
-        """, (int(assignment["project_id"]),))
-        project_amount = c.fetchone()[0]
-
-        if other_assigned + new_amount > project_amount:
-            st.error("Jumlah assignment melebihi total project.")
-            is_valid = False
-
-        if is_valid:
-            c.execute("""
-                UPDATE assignments
-                SET amount_assigned=?, status=?, payment_amount=?
-                WHERE id=?
-            """, (
-                new_amount,
-                status,
-                payment,
-                selected_id
-            ))
-
-            # status tailor logic (optional)
-            if status == "paid":
-                c.execute("""
-                    UPDATE tailors SET status='idle'
-                    WHERE id=?
-                """, (int(assignment["tailor_id"],)))
-
-            conn.commit()
-            st.success("Assignment berhasil diperbarui.")
-            st.rerun()
+    # --- 2. LIST & EDIT ---
+    with col_list:
+        st.subheader("📋 Daftar Riwayat Penugasan")
+        
+        # Tampilkan tabel tanpa kolom ID teknis agar bersih
+        display_df = df_assign.drop(columns=["project_id", "tailor_id"])
+        
+        # [PERBAIKAN UTAMA] Isi nilai None dengan 0 agar tidak error saat format currency
+        display_df["Upah"] = display_df["Upah"].fillna(0)
+        
+        st.dataframe(
+            display_df.style.format({"Upah": "Rp {:,.0f}"}), 
+            use_container_width=True,
+            height=400
+        )
+        
+        st.divider()
+        st.subheader("✏️ Update Status / Edit")
+        
+        if not df_assign.empty:
+            with st.expander("Klik untuk update status penugasan", expanded=False):
+                assign_ids = df_assign["id"].tolist()
+                sel_assign_id = st.selectbox("Pilih ID Assignment", assign_ids)
+                
+                # Load data saat ini
+                curr_row = df_assign[df_assign["id"] == sel_assign_id].iloc[0]
+                st.info(f"Mengedit: **{curr_row['Project']}** - {curr_row['Penjahit']} ({curr_row['Jml Pcs']} pcs)")
+                
+                with st.form("edit_assign"):
+                    col_s, col_p = st.columns(2)
+                    with col_s:
+                        status_opts = ["assigned", "submitted", "paid"]
+                        curr_idx = status_opts.index(curr_row["Status"]) if curr_row["Status"] in status_opts else 0
+                        new_status = st.selectbox("Status", status_opts, index=curr_idx)
+                        
+                    with col_p:
+                        # Handle jika Upah None/NaN di form juga
+                        val_upah = 0.0 if pd.isna(curr_row["Upah"]) else float(curr_row["Upah"])
+                        new_pay = st.number_input("Upah Cair (Rp)", value=val_upah, step=5000.0)
+                    
+                    if st.form_submit_button("Simpan Perubahan"):
+                        # Update Assignment
+                        c.execute("UPDATE assignments SET status=?, payment_amount=? WHERE id=?", (new_status, new_pay, sel_assign_id))
+                        
+                        # LOGIC PENTING: Jika status berubah jadi 'paid', bebaskan penjahit (idle)
+                        if new_status == 'paid' and curr_row["Status"] != 'paid':
+                            c.execute("UPDATE tailors SET status='idle' WHERE id=?", (int(curr_row["tailor_id"]),))
+                            st.toast("Penjahit kini statusnya IDLE (Siap kerja lagi).")
+                            
+                        conn.commit()
+                        st.success("Data berhasil diupdate!")
+                        st.rerun()
