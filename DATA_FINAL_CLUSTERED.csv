@@ -1,0 +1,114 @@
+No.,Kode Penjahit,Nama,Alamat,Jarak Rumah ke Koperasi (Km),Usia,Kerapian,Ketepatan Waktu,Quantity,Komitmen,Spesialis,Seragam Hem Putih (Pcs/hari),Seragam Hem Pramuka (Pcs/hari),Rok Seragam (Pcs/hari),Celana Pramuka Seragam (Pcs/hari),Kemeja Kerja (Pcs/hari),Custom (Sulit) (Pcs/hari),Kategori 1,Kategori 2,Cluster_ID,Kategori_ML
+1,03.24,Abdul Rozak,Sidomulyo II-C/5,4.0,61,1,1,1,1,Semua,25,10,30,30,3,0,"Terapi, Tercepat, Terbanyak",Tidak ada,0,Elite Team (Cepat & Banyak)
+2,01.05,Afiah,Sidodadi 3 No. 1,8.1,54,1,1,1,1,Semua,10,2,5,5,2,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+3,01.20,Alfiyah,Wonokusumo Bhakti GG 2/28,3.7,55,1,1,0,1,Semua,5,2,5,3,2,0,Tidak ada,Tidak ada,1,Standar / Rapi
+4,03.44, Anis Syayidah Ulfa,Jl. Pogot VI/26,3.8,47,0,0,1,1,Semua,20,5,10,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+5,03.21,Aprilianti,Bulak Banteng Wetan XI/31,2.6,29,1,1,1,1,Semua,5,2,5,5,0,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+6,03.26,Bambang Lukistianto,Kalilom Lor Indah Sedap Malam 14,4.1,62,1,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,0,0,Tidak ada,Tidak ada,1,Standar / Rapi
+7,02.01,Dewi Ambar Arifiati,Deles buntu 1/5 Surabaya,11.0,44,1,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+8,02.08,Dewi Munir Indratanti,Tambak Asri 29/83,11.0,47,0,1,1,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+9,02.09,Dewi Munir Indriyati,Tambak Asri 29/83,11.0,49,0,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+10,01.03,Diani Nanik Lestari,Simolawang 2/44b,7.7,55,1,1,0,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+11,04.06,Dyah Dwikora H.,Bakung 2b/ 34B,16.0,61,1,1,0,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+12,01.04,Endah Susanti,Granting Barat 105,4.8,49,0,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+13,03.14,Ernawati Ningsih,Pogot 9 b/3 a,4.6,44,1,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+14,02.11,Evi Dharmawati,Krembangan Jaya Sel 2C/8,11.0,51,1,1,0,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+15,03.43,Faridah,Bulak Banteng Kidul 5/6,3.3,52,0,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,0,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+16,01.13,Fatimatul Zaroh,Simorejo Sari B 13 No. 9A,13.0,45,0,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+17,03.10,G. Kusnariati,Tambak wedi baru 13A dalam buntu no. 3,1.1,43,1,1,0,1,Semua,5,2,5,5,1,2,"Terapi, Tercepat, dan Loyalitas",Bisa Modest,1,Standar / Rapi
+18,02.07,Galuh Zahroh,Krembangan bakti 14/11,8.4,71,0,0,1,0,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,0,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+19,02.02,Hadak Mitharani,Jl. Medokan Semampir Indah Gg. 2 No. 1,15.0,44,1,1,1,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,3,2,"Terapi, Tercepat, dan Loyalitas",Bisa Modest,0,Elite Team (Cepat & Banyak)
+20,Non Aktif,Hadirto (Alm),Sidotopo Jaya 8/2,4.3,65,0,0,0,0,"Hanya bisa mengerjakan rok, atasan dan celana",0,0,0,0,0,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+21,02.31,Hanafi,Karang Tembok 1/21-B,5.0,55,1,1,1,1,Seragam,20,10,5,5,1,0,"Terapi, Tercepat, Terbanyak",Tidak ada,0,Elite Team (Cepat & Banyak)
+22,04.10,Hj. Umi Saroh,Kaliwaru GG Masjid No. 14,17.0,70,0,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+23,03.38,I'anatus Sholiha,Sukolilo Larangan 3/23,6.7,53,1,1,1,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+24,02.24,Ina Indayati,Petemon 1 / 77 - H,13.0,63,1,1,0,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+25,04.07,Indah Handayani,Jl. Kalisari Damen No. 55-A,11.0,46,1,1,1,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+26,02.04,Isnaini,Gebang Wetan 1 No. 10,12.0,51,0,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+27,02.16,Istiqomah,Jl. Mrutu Kalianyar,3.8,41,1,1,1,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+28,03.22,Katri,Tambak Wedi Masjid 6/10,0.35,61,0,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+29,03.03,Khofifah,Tanah Merah Utara 1 No 12,2.5,38,1,1,1,1,Semua,10,2,10,10,3,1,"Terapi, Tercepat, dan Loyalitas",Tidak ada,0,Elite Team (Cepat & Banyak)
+30,03.39,Khusnul Khotimah,Sukolilo Larangan 9/120,7.1,54,1,1,1,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+31,01.11,Kikin Sukinah,Gembong 3/76,7.6,58,0,0,1,0,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+32,02.26,Kuswati,Pakis 2 / 41B,13.0,53,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+33,03.20,Lailatul Wijayanti,Dukuh Bulak Banteng 46,1.7,40,1,1,0,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+34,Non Aktif,Latifah,Donorejo 68,6.7,42,0,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",0,0,0,0,0,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+35,02.03,Lilis Sofiatain Nisa,Jl. Gebang Wetan No.32,12.0,43,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+36,02.12,Luluk Ratnawati,Kalianak Timur BLK 2-D,10.0,44,0,1,1,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+37,01.07,M. Ali Mukhaidari,Simokerto 3/56,7.3,46,1,1,1,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+38,03.02,M. Prasanti Rahmawatun,Tanah Merah Sayur 7/19,3.0,55,1,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+39,02.18,Mahlul Khamim,Wonokusumo Damai 4/23,4.9,46,1,1,1,1,Semua,10,10,10,10,3,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+40,03.23,Maria Andriyana Leni ,Tambak Wedi Komplek KMS 21B,0.65,52,0,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+41,02.30,Maruf,Tenggumung Karya Lor 5 No. 10,4.0,47,1,1,1,1,Semua,5,2,5,5,1,0,"Terapi, Tercepat, Terbanyak",Tidak ada,0,Elite Team (Cepat & Banyak)
+42,03.32,Maskur,Kapas Lor 1-C/16,4.5,45,1,1,1,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+43,03.04,Maslacha,Tanah Merah Utara 1/1-A,2.5,69,1,1,1,1,Semua,5,2,5,5,3,1,Bisa Modest,Tidak ada,0,Elite Team (Cepat & Banyak)
+44,03.05,Mian ,Randu Barat 1-B/38,3.4,61,1,1,0,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+45,03.40,Mudawamah,Larangan sukolilo 2 no 26 RT 01 RW 01,6.3,47,1,1,1,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+46,Non Aktif,Mufti Yuana Endah S.,Kaliwaru I/16,16.0,54,0,0,0,0,"Hanya bisa mengerjakan rok, atasan dan celana",0,0,0,0,0,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+47,04.08,Mujianah,Jl. Kalisari I NO 69,11.0,49,1,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+48,01.16,Mujiono,Jl. Putat Gede Barat II/52,18.0,55,1,1,1,1,Semua,5,2,5,5,2,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+49,01.14,Mujiyati,Simorejo Sari B 12 No. 2,13.0,43,1,1,1,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+50,03.12,Muneri,Tanah Merah Utara 1/Tanah Kali Kedinding,2.5,60,1,1,1,1,Seragam,5,2,5,5,0,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+51,02.27,Murdiana,Pakis Gunung 1-B/31,13.0,45,1,0,1,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+52,03.06,Muslicha,Tambak Wedi Indah Barat 2 D/ 16,0.75,71,1,1,0,1,Semua,5,2,5,5,0,2,Tidak ada,Tidak ada,1,Standar / Rapi
+53,03.01,Nanik Fadilah,Kedinding Lor 2/136,1.9,47,1,1,1,1,Semua,5,2,5,5,3,2,Bisa Modest,Tidak ada,0,Elite Team (Cepat & Banyak)
+54,02.17,Neni Kuntarti,Wonosari 7/10,4.3,44,1,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+55,04.16,Nina Ishariani,Mojoklanggru Lor 56,9.7,49,1,1,0,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+56,01.18,Nina Sulistyowati,Rusun Sumbo Blok E/101,4.8,39,1,1,0,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+57,04.09,Nunik Nurul Maslahah,Kejawan Gebang II/20,11.4,50,1,1,1,1,Semua,5,2,5,5,3,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+58,03.16,Nur Aida,Tambak Wedi Tengah Timur 1A/3A,1.0,61,1,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+59,01.02,Nur Hidayati,Wonosari Lor Baru 3/32,2.9,46,0,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+60,04.02,Nurmahmuda,JL. Tempurejo No. 9/8,7.1,45,0,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+61,01.17,Nurhayati,Tanah Merah Sayur 3 Buntu No. 34,2.3,70,1,1,0,1,Semua,10,2,10,5,1,0,Bisa Modest,Tidak ada,1,Standar / Rapi
+62,01.15,Nurhayati,Rusun Sumbo Blok B/310,4.8,44,1,1,1,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,3,2,"Terapi, Tercepat, dan Loyalitas",Tidak ada,0,Elite Team (Cepat & Banyak)
+63,03.33,Nurul Fadilah,Tambak Segaran 1/47,5.4,47,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+64,01.19,Nurul Hidayati,Kalimas Barat 2/23,5.9,40,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+65,01.10,Nurul Latifah,Tenggumung Wetan/Merpati 14,3.2,51,1,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,0,0,Tidak ada,Tidak ada,1,Standar / Rapi
+66,03.07,Oemi Baidah,Tanah Merah Indah Sayur 3 no 8,2.2,61,1,1,1,1,Semua,10,2,5,5,3,2,"Terapi, Tercepat, dan Loyalitas",Tidak ada,0,Elite Team (Cepat & Banyak)
+67,04.15,Ririn Rinantari,Tambak Medokan Ayu Kav. 11/4B,17.2,54,0,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+68,01.12,Rita,Simorejo Sari B 13 No. 11A,12.5,63,0,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+69,03.35,Rochmawati,Jl. Labak Jaya Utara 5A/3,3.9,48,0,1,0,0,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,0,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+70,03.09,Rusmini,Tanah Merah Sayur 5/36,2.3,63,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+71,01.01,Saptorini,Tambak Gringsing Baru 3/3/3,6.0,56,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+72,01.21,Saptorini,Tambak Gringsing Baru 3/3/3,6.0,56,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+73,Non Aktif,Saudah,Kedinding Lor Gg. Anggrek 34,0.6,53,0,0,0,0,"Hanya bisa mengerjakan rok, atasan dan celana",0,0,0,0,0,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+74,04.04,Shieny Suwito,Jl. Kalisari Timur 62,7.8,42,1,1,1,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+75,01.06,Siri,Kenjeran 4E/2,5.8,42,1,1,1,1,Semua,5,2,5,5,0,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+76,02.10,Siti Alfiyah,Bulak Sari 3/4,2.8,55,0,0,0,0,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+77,02.05,Siti choiriyah,Gebang lor jl Kanoman 2 no 102 d,10.6,47,1,1,0,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+78,04.03,Siti Fatimah,Kaliwaru 1/10,15.4,54,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+79,03.18,Siti Juhariyah,DK. Bulak Banteng Suropati 5-D/46,1.3,38,1,1,1,1,Semua,5,2,10,10,2,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+80,04.01,Siti Muamanah,Jl. Tempurejo No. 9/19,7.1,41,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+81,02.22,Siti Muslimah Nuraini,Jl. Tenggumung Karya Lor 4c,2.8,61,0,1,0,1,Seragam,5,2,5,5,0,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+82,01.09,Siti Zaenab,Sidodadi 10 14A,7.0,42,0,1,0,1,Seragam,5,2,5,5,0,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+83,03.08,Soeprijatin,Tanah Merah Sayur 7 No. 29,2.3,60,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+84,01.08,Sri Mulyani,Sidoyoso 2/3/2,3.8,53,1,1,0,1,Seragam,5,2,5,5,1,2,Bisa Modest,Tidak ada,1,Standar / Rapi
+85,04.17,Sri Purwati,Mojoklanggru Lor 78-C,9.5,59,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+86,04.12,Sri Windu Utami,Manyar Sabrangan 5/38E,10.0,51,1,1,0,1,Seragam,5,2,5,5,1,2,Bisa Modest,Tidak ada,1,Standar / Rapi
+87,03.28,Suaibah,Kapas Madya VI/131 ,3.4,35,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+88,03.27,Sudartik,Kapas Madya 2-E-1/23,3.7,65,1,1,1,1,Semua,10,2,10,5,1,2,Bisa Modest,Tidak ada,0,Elite Team (Cepat & Banyak)
+89,03.47,Sugiati,Kapas Lor Wetan 4 No. 7,5.4,53,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+90,02.25,Suharning,Pakis 2/37-G,12.3,51,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+91,03.15,Suharsih,Pogot 10/54,2.5,47,1,1,1,1,Semua,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+92,03.42,Suhartini,Kedung Mangu 4D Buntu/6,2.2,50,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+93,03.17,Suliha,Tambak Wedi Baru 14/94A,0.3,46,1,1,1,1,Seragam,10,2,20,10,3,0,"Terapi, Tercepat, dan Loyalitas",Tidak ada,0,Elite Team (Cepat & Banyak)
+94,03.13,Sumarti,Kedinding Lor Kamboja No. 92,0.4,52,1,1,0,1,Seragam,5,2,5,5,1,2,Bisa Modest,Tidak ada,1,Standar / Rapi
+95,03.30,Sumarti,Rangkah 6/29,4.6,54,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+96,02.19,Tachtimul Khusna,Wonosari Lor Baru 2/1,3.4,42,1,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+97,03.29,Titik Suparmi,Rangkah 6/29,4.6,48,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+98,03.19,Tri Cahyani,Bulak Banteng Sekolahan 7-A/22,2.3,41,1,1,1,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+99,02.13,Tri Nofiati,Tenggumung Baru Selatan No. 71 F,3.9,47,1,0,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+100,02.06,Tri Ratnasari,Asempayung No 39,10.8,44,1,1,0,1,Seragam,5,2,5,5,1,2,Bisa Modest,Tidak ada,1,Standar / Rapi
+101,03.25,Ubaidillah Andy,Bulak Banteng Madya 11/12,2.1,49,1,1,1,1,Seragam,25,2,5,5,3,0,"Terapi, Tercepat, Terbanyak",Tidak ada,0,Elite Team (Cepat & Banyak)
+102,04.18,Umi Chanifah,Rungkut Kidul 3/48,16.5,56,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+103,02.20,Urifah Chasanah,Sidotopo Jaya 9/1,3.9,56,0,1,1,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+104,03.31,Warianti,Jl. Sidotopo Wetan Mulia GG 3 NO 56,2.7,57,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+105,03.11,Wariyanti,Sidotopo Wetan Mulia Gg. 3/56,2.8,57,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+106,03.46,Waryadi,Ploso 9B-9 ,5.2,55,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+107,04.05,Watik,Jl. Labansari 5-BLK,7.4,56,0,1,0,1,"Hanya bisa mengerjakan rok, atasan dan celana",5,2,5,5,1,0,Tidak ada,Tidak ada,2,Perlu Bimbingan
+108,04.11,Winarty,Kalisari 62,7.8,56,1,1,1,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+109,03.41,Wiwik Yuliani,Kedinding Lor GG Mawar No. 18,0.7,61,1,1,0,1,Semua,5,2,5,5,2,2,"Terapi, Tercepat, dan Loyalitas",Bisa Modest,1,Standar / Rapi
+110,02.15,Yuniati,Tenggumung Karya Gg IB/1,3.3,52,1,1,0,1,Seragam,5,2,5,5,0,0,Tidak ada,Tidak ada,1,Standar / Rapi
+111,03.49,Jamilah,"Takal, Kenjeran",1.5,51,1,1,1,1,Semua,5,2,5,5,0,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
+112,04.14,Lilik S.,"Petung sewu, Gubeng",8.2,45,1,1,0,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,1,Standar / Rapi
+113,04.13,Nur Faricha,Medokan ayu tambak gg 11,17.6,57,1,1,1,1,Seragam,5,2,5,5,1,0,Tidak ada,Tidak ada,0,Elite Team (Cepat & Banyak)
