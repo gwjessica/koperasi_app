@@ -20,7 +20,7 @@ with st.expander("➕ Tambah Penjahit", expanded=False):
 
         specialty = st.selectbox(
             "Spesialisasi",
-            ["uniform", "custom"]
+            ["seragam", "semua", "atasan/rok/celana"]
         )
 
         contact = st.text_input("Kontak (HP / WA)")
@@ -96,7 +96,7 @@ with st.form("edit_tailor_form"):
 
     specialty = st.selectbox(
         "Spesialisasi",
-        ["uniform", "custom"],
+        ["seragam", "semua", "atasan/rok/celana"],
         index=0 if tailor["Spesialisasi"] == "uniform" else 1
     )
 

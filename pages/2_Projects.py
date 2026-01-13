@@ -20,7 +20,7 @@ with st.expander("➕ Tambah Project Baru", expanded=False):
 
         clothes_type = st.selectbox(
             "Jenis Pakaian",
-            ["uniform", "custom"]
+            ["seragam sekolah", "seragam pramuka", "rok", "kemeja/batik", "custom/gamis/sulit"]
         )
 
         amount = st.number_input(
@@ -223,7 +223,7 @@ else:
 
             clothes_type = st.selectbox(
                     "Jenis Pakaian",
-                    ["uniform", "custom"]
+                    ["seragam sekolah", "seragam pramuka", "rok", "kemeja/batik", "custom/gamis/sulit"]
                 )
             
             amount = st.number_input("Jumlah (pcs)", min_value=1, value=int(project["Jumlah (pcs)"]))

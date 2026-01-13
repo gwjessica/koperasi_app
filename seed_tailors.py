@@ -58,10 +58,10 @@ def seed_database():
             
         # Spesialisasi
         spesialis_raw = str(row['Spesialis']).lower()
-        if "seragam" in spesialis_raw or "semua" in spesialis_raw:
-            specialty = "uniform"
+        if(spesialis_raw == "hanya bisa mengerjakan rok, atasan dan celana"):
+            specialty = "atasan/rok/celana"
         else:
-            specialty = "custom"
+            specialty = spesialis_raw
 
         # Insert ke Database
         c.execute("""

@@ -19,7 +19,7 @@ def init_db():
         age INTEGER,
         distance_km REAL,
         speed_clothes_per_day REAL,
-        specialty TEXT, -- Uniform/Custom
+        specialty TEXT CHECK(specialty IN ('seragam', 'semua', 'atasan/rok/celana')), -- Uniform/Custom
         status TEXT CHECK(status IN ('idle', 'working')) DEFAULT 'idle', -- Idle/Working
         contact TEXT
     )''')
@@ -38,7 +38,7 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         project_name TEXT,
         customer_name TEXT, -- Asumsi pengganti Customer ID jika belum ada tabel customer
-        clothes_type TEXT CHECK(clothes_type IN ('uniform', 'custom')),
+        clothes_type TEXT CHECK(clothes_type IN ('seragam sekolah', 'seragam pramuka', 'rok', 'kemeja/batik', 'custom/gamis/sulit')), -- seragam sekolah, seragam pramuka, rok, kemeja/batik, custom/gamis/sulit
         amount INTEGER,
         deadline DATE,
         order_date DATE,
