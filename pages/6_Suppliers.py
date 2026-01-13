@@ -2,131 +2,93 @@ import streamlit as st
 import pandas as pd
 from db import get_connection
 
-st.title("🚚 Manajemen Supplier")
+st.set_page_config(page_title="Suppliers", page_icon="🚚", layout="wide")
+st.title("🚚 Partner & Supplier")
 
 conn = get_connection()
 conn.row_factory = None
 c = conn.cursor()
 
 # =========================
-# ADD TAILOR
+# LOAD DATA
 # =========================
-with st.expander("➕ Tambah Supplier", expanded=False):
-    with st.form("add_supplier_form"):
-        supplier_name = st.text_input("Nama Supplier")
-        address = st.text_input("Alamat")
-        contact = st.text_input("Kontak")
-        notes = st.text_area("Catatan")
+df_suppliers = pd.read_sql_query("SELECT id, name, address, contact, notes FROM suppliers ORDER BY name", conn)
 
-        submit_supplier = st.form_submit_button("➕ Simpan Supplier")
-
-        if submit_supplier:
-            if not supplier_name:
-                st.warning("Nama supplier wajib diisi.")
-            else:
-                c.execute("""
-                    INSERT INTO suppliers
-                    (name, address, contact, notes)
-                    VALUES (?, ?, ?, ?)
-                """, (
-                    supplier_name,
-                    address,
-                    contact,
-                    notes
-                ))
-                conn.commit()
-                st.success("Supplier berhasil ditambahkan.")
-                st.rerun()
-
-# =========================
-# LIST TAILORS
-# =========================
-st.subheader("📋 Daftar Supplier")
-
-df = pd.read_sql_query("""
-    SELECT
-        id,
-        name AS Nama,
-        address AS Alamat,
-        contact AS Kontak,
-        notes AS Catatan
-    FROM suppliers
-    ORDER BY id DESC
-""", conn)
-
-if df.empty:
-    st.info("Belum ada supplier.")
-    st.stop()
-
-st.dataframe(df, use_container_width=True)
-
-# =========================
-# EDIT / DELETE
-# =========================
-st.subheader("✏️ Edit Supplier")
-
-selected_id = st.selectbox(
-    "Pilih supplier",
-    df["id"],
-    format_func=lambda x: f"ID {x} - {df[df['id']==x]['Nama'].values[0]}"
-)
-
-supplier = df[df["id"] == selected_id].iloc[0]
-
-with st.expander("Edit Supplier Data", expanded=False):
-    with st.form("edit_supplier_form"):
-        name = st.text_input("Nama", value=supplier["Nama"])
-        address = st.text_input("Alamat", value=supplier["Alamat"])
-        contact = st.text_input("Kontak", value=supplier["Kontak"])
-
-        notes = st.text_area("Catatan", value=supplier["Catatan"])
-
-        update = st.form_submit_button("💾 Edit")
-
-        if update:
-            c.execute("""
-                UPDATE suppliers
-                SET name=?, address=?, contact=?, notes=?
-                WHERE id=?
-            """, (
-                name,
-                address,
-                contact,
-                selected_id
-            ))
-            conn.commit()
-            st.success("Data penjahit diperbarui.")
-            st.rerun()
-
-
-# HISTORY
-
-st.subheader("📋 History Supplier")
-
-df_history = pd.read_sql_query("""
-SELECT
+# Load Spending per Supplier (Join table)
+query_spend = """
+SELECT 
     s.name AS "Supplier",
-    p.item AS "Material",
-    p.amount AS "Jumlah",
-    p.unit AS "Satuan",
-    p.price AS "Harga",
-    p.date AS "Tanggal",
-    pr.project_name AS "Project"
-FROM purchases p
-JOIN suppliers s ON p.supplier_id = s.id
-LEFT JOIN projects pr ON p.project_id = pr.id
-ORDER BY p.date DESC;
-""", conn)
+    COUNT(p.id) AS "Total Transaksi",
+    COALESCE(SUM(p.price), 0) AS "Total Belanja"
+FROM suppliers s
+LEFT JOIN purchases p ON p.supplier_id = s.id
+GROUP BY s.id
+ORDER BY "Total Belanja" DESC
+"""
+df_spend = pd.read_sql_query(query_spend, conn)
 
-if df_history.empty:
-    st.info("Belum ada pembelian.")
+# =========================
+# TABS LAYOUT
+# =========================
+tab1, tab2 = st.tabs(["📊 Analisis Partner", "📇 Data Supplier"])
 
-st.dataframe(df_history, use_container_width=True)
+# --- TAB 1: INSIGHTS ---
+with tab1:
+    if df_spend.empty:
+        st.info("Belum ada data transaksi dengan supplier.")
+    else:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("🏆 Top Supplier (Berdasarkan Nilai Belanja)")
+            st.bar_chart(df_spend.set_index("Supplier")["Total Belanja"], color="#4CAF50", horizontal=True)
+            
+        with col2:
+            st.subheader("📦 Frekuensi Pembelian")
+            st.bar_chart(df_spend.set_index("Supplier")["Total Transaksi"], color="#FF9F40")
 
-selected_supplier = st.selectbox(
-    "See by Supplier",
-    df["Nama"]
-)
+        st.subheader("Rincian Kinerja Supplier")
+        st.dataframe(
+            df_spend.style.format({"Total Belanja": "Rp {:,.0f}"}),
+            use_container_width=True
+        )
 
-filtered = df_history[df_history["Supplier"] == selected_supplier]
-st.dataframe(filtered)
+# --- TAB 2: CRUD ---
+with tab2:
+    col_input, col_list = st.columns([1, 2])
+    
+    with col_input:
+        st.subheader("➕ Tambah Partner Baru")
+        with st.form("add_supp"):
+            name = st.text_input("Nama Toko / Supplier")
+            contact = st.text_input("Kontak (HP/Telp)")
+            address = st.text_area("Alamat")
+            notes = st.text_input("Catatan (Misal: Spesialis Kancing)")
+            
+            if st.form_submit_button("Simpan"):
+                if name:
+                    c.execute("INSERT INTO suppliers (name, address, contact, notes) VALUES (?,?,?,?)", 
+                              (name, address, contact, notes))
+                    conn.commit()
+                    st.success("Tersimpan!")
+                    st.rerun()
+                else:
+                    st.warning("Nama wajib diisi.")
+                    
+    with col_list:
+        st.subheader("📇 Database Kontak")
+        st.dataframe(df_suppliers, use_container_width=True)
+        
+        with st.expander("Edit Data Supplier"):
+            sel_id = st.selectbox("Pilih Supplier utk Edit", df_suppliers["id"], format_func=lambda x: f"ID {x}")
+            if sel_id:
+                curr = df_suppliers[df_suppliers["id"] == sel_id].iloc[0]
+                with st.form("edit_supp"):
+                    n_name = st.text_input("Nama", curr["name"])
+                    n_contact = st.text_input("Kontak", curr["contact"])
+                    n_addr = st.text_input("Alamat", curr["address"])
+                    if st.form_submit_button("Update"):
+                        c.execute("UPDATE suppliers SET name=?, contact=?, address=? WHERE id=?", (n_name, n_contact, n_addr, sel_id))
+                        conn.commit()
+                        st.success("Updated.")
+                        st.rerun()
