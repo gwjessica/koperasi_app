@@ -29,7 +29,8 @@ def init_db():
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT,
         address TEXT,
-        contact TEXT
+        contact TEXT,
+        notes TEXT
     )''')
 
     # 4. Tabel Projects (Pesanan Masuk)

@@ -167,119 +167,123 @@ else:
 
 st.subheader("✏️ Edit Project")
 
-project_ids = df_projects["project_id"].tolist()
+if df_projects.empty:
+    st.info("Belum ada project.")
 
-selected_project_id = st.selectbox(
-    "Pilih Project",
-    project_ids,
-    format_func=lambda x: f"ID {x} - {df_projects[df_projects['project_id']==x]['Nama Project'].values[0]}",
-    key="edit_project_select"
-)
+else:
+    project_ids = df_projects["project_id"].tolist()
 
-c.execute("""
-    SELECT 
-        project_name,
-        customer_name,
-        amount,
-        deadline,
-        price_per_item,
-        base_fee,
-        tailor_fee_per_item,
-        notes
-    FROM projects
-    WHERE id=?
-""", (int(selected_project_id),))
+    selected_project_id = st.selectbox(
+        "Pilih Project",
+        project_ids,
+        format_func=lambda x: f"ID {x} - {df_projects[df_projects['project_id']==x]['Nama Project'].values[0]}",
+        key="edit_project_select"
+    )
 
-row = c.fetchone()
+    c.execute("""
+        SELECT 
+            project_name,
+            customer_name,
+            amount,
+            deadline,
+            price_per_item,
+            base_fee,
+            tailor_fee_per_item,
+            notes
+        FROM projects
+        WHERE id=?
+    """, (int(selected_project_id),))
 
-if not row:
-    st.error("Project tidak ditemukan.")
-    st.stop()
+    row = c.fetchone()
 
-project = {
-    "Nama Project": row[0],
-    "Customer": row[1],
-    "Jumlah (pcs)": row[2],
-    "Deadline": row[3],
-    "Harga Jual / item": row[4],
-    "Base Fee": row[5],
-    "Biaya Jahit / item": row[6],
-    "Catatan": row[7],
-}
+    if not row:
+        st.error("Project tidak ditemukan.")
+        st.stop()
+
+    project = {
+        "Nama Project": row[0],
+        "Customer": row[1],
+        "Jumlah (pcs)": row[2],
+        "Deadline": row[3],
+        "Harga Jual / item": row[4],
+        "Base Fee": row[5],
+        "Biaya Jahit / item": row[6],
+        "Catatan": row[7],
+    }
 
 
-c.execute("SELECT base_fee FROM projects WHERE id=?", (int(selected_project_id),))
-base_fee_value = c.fetchone()
-base_fee_value = base_fee_value[0] if base_fee_value else 0
+    c.execute("SELECT base_fee FROM projects WHERE id=?", (int(selected_project_id),))
+    base_fee_value = c.fetchone()
+    base_fee_value = base_fee_value[0] if base_fee_value else 0
 
-with st.expander("Edit Project Form", expanded=False):
-    with st.form("edit_project_form"):
-        project_name = st.text_input("Nama Project", project["Nama Project"])
-        customer_name = st.text_input("Customer", project["Customer"])
+    with st.expander("Edit Project Form", expanded=False):
+        with st.form("edit_project_form"):
+            project_name = st.text_input("Nama Project", project["Nama Project"])
+            customer_name = st.text_input("Customer", project["Customer"])
 
-        clothes_type = st.selectbox(
-                "Jenis Pakaian",
-                ["uniform", "custom"]
+            clothes_type = st.selectbox(
+                    "Jenis Pakaian",
+                    ["uniform", "custom"]
+                )
+            
+            amount = st.number_input("Jumlah (pcs)", min_value=1, value=int(project["Jumlah (pcs)"]))
+            deadline = st.date_input("Deadline", pd.to_datetime(project["Deadline"]))
+
+            base_fee = st.number_input(
+                "Base Fee",
+                min_value=0.0,
+                value=float(base_fee_value or 0)
             )
-        
-        amount = st.number_input("Jumlah (pcs)", min_value=1, value=int(project["Jumlah (pcs)"]))
-        deadline = st.date_input("Deadline", pd.to_datetime(project["Deadline"]))
 
-        base_fee = st.number_input(
-            "Base Fee",
-            min_value=0.0,
-            value=float(base_fee_value or 0)
-        )
+            tailor_fee = st.number_input(
+                "Biaya Jahit / Item",
+                min_value=0.0,
+                value=float(project["Biaya Jahit / item"] or 0)
+            )
 
-        tailor_fee = st.number_input(
-            "Biaya Jahit / Item",
-            min_value=0.0,
-            value=float(project["Biaya Jahit / item"] or 0)
-        )
+            price_per_item = st.number_input(
+                "Harga Jual / Item",
+                min_value=0.0,
+                value=float(project["Harga Jual / item"] or 0)
+            )
 
-        price_per_item = st.number_input(
-            "Harga Jual / Item",
-            min_value=0.0,
-            value=float(project["Harga Jual / item"] or 0)
-        )
+            notes = st.text_area("Catatan", project["Catatan"] or "")
 
-        notes = st.text_area("Catatan", project["Catatan"] or "")
+            submit = st.form_submit_button("💾 Update Project")
 
-        submit = st.form_submit_button("💾 Update Project")
-
-        if submit:
-            if not project_name or not customer_name:
-                st.warning("Nama project dan customer wajib diisi.")
-            else:
-                c.execute("""
-UPDATE projects
-SET project_name = ?,
-    customer_name = ?,
-    clothes_type = ?,
-    amount = ?,
-    deadline = ?,
-    order_date = DATE('now'),
-    status = 'ongoing',
-    notes = ?,
-    tailor_fee_per_item = ?,
-    base_fee = ?,
-    price_per_item = ?
-WHERE id = ?
-""", (
-        project_name,
-        customer_name,
-        clothes_type,
-        amount,
-        deadline,
-        notes,
-        tailor_fee,
-        base_fee,
-        price_per_item,
-        selected_project_id
-    ))
-                conn.commit()
-                st.success("Project berhasil diedit.")
-                st.rerun()
+            if submit:
+                if not project_name or not customer_name:
+                    st.warning("Nama project dan customer wajib diisi.")
+                else:
+                    c.execute("""
+                    UPDATE projects
+                    SET project_name = ?,
+                        customer_name = ?,
+                        clothes_type = ?,
+                        amount = ?,
+                        deadline = ?,
+                        order_date = DATE('now'),
+                        status = 'ongoing',
+                        notes = ?,
+                        tailor_fee_per_item = ?,
+                        base_fee = ?,
+                        price_per_item = ?
+                    WHERE id = ?
+                    """, (
+                        project_name,
+                        customer_name,
+                        clothes_type,
+                        amount,
+                        deadline,
+                        notes,
+                        tailor_fee,
+                        base_fee,
+                        price_per_item,
+                        selected_project_id
+                    ))
+                    conn.commit()
+                    st.success("Project berhasil diedit.")
+                    st.rerun()
 
 
 
