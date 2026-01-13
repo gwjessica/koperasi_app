@@ -9,7 +9,7 @@ from db import get_connection
 # =========================================
 st.set_page_config(page_title="Dashboard Utama", page_icon="📊", layout="wide")
 
-# --- FUNGSI BANTUAN UNTUK GAMBAR LOKAL ---
+# --- FUNGSI BANTUAN GAMBAR ---
 def get_base64_image(image_path):
     try:
         with open(image_path, "rb") as img_file:
@@ -17,26 +17,34 @@ def get_base64_image(image_path):
     except FileNotFoundError:
         return ""
 
-# Ubah gambar lokal jadi format Base64
-# Pastikan file PCU.png dan SUTD.png ada di folder yang sama dengan Dashboard.py
+# Load Gambar (Pastikan file ada di folder yang sama)
 petra_b64 = get_base64_image("PCU.png")
 sutd_b64 = get_base64_image("SUTD.png")
 
-# Masukkan ke variabel URL
 LOGO_PETRA = f"data:image/png;base64,{petra_b64}"
 LOGO_KOPERASI = f"data:image/png;base64,{sutd_b64}"
 
 # =========================================
-# 2. FITUR LOADER / SPLASH SCREEN (DARK MODE FRIENDLY)
+# 2. LOGIKA LOADER (HANYA SEKALI PER SESI)
 # =========================================
-if "is_loaded" not in st.session_state:
+# Kita cek apakah 'first_load_done' SUDAH ADA di session_state?
+# Jika BELUM ADA, berarti ini adalah sesi baru atau habis di-refresh (Ctrl+R).
+if "first_load_done" not in st.session_state:
+    
+    # 1. Sembunyikan Sidebar agar user tidak klik-klik saat loading
+    st.markdown("""
+        <style>
+            [data-testid="stSidebar"] { display: none; }
+        </style>
+    """, unsafe_allow_html=True)
+
+    # 2. Wadah Loader
     loader_container = st.empty()
     
     with loader_container.container():
-        # --- CSS STYLE ---
+        # CSS Animasi
         st.markdown(f"""
         <style>
-            /* Container utama: Transparan */
             .loader-wrapper {{
                 display: flex;
                 flex-direction: column;
@@ -45,67 +53,41 @@ if "is_loaded" not in st.session_state:
                 margin-top: 10vh;
                 padding: 40px;
             }}
-
-            /* Container Logo */
             .logo-container {{
-                display: flex;
-                gap: 40px;
-                margin-bottom: 30px;
-                align-items: center;
-                justify-content: center;
+                display: flex; gap: 40px; margin-bottom: 30px;
+                align-items: center; justify-content: center;
             }}
-            .custom-logo {{
-                height: 100px;
-                width: auto;
-                transition: transform 0.3s ease;
-            }}
-            .custom-logo:hover {{
-                transform: scale(1.1);
-            }}
-
-            /* Spinner Loading */
+            .custom-logo {{ height: 100px; width: auto; transition: transform 0.3s ease; }}
+            .custom-logo:hover {{ transform: scale(1.1); }}
+            
             .loader-spinner {{
                 border: 6px solid #444; 
                 border-top: 6px solid #4CAF50; 
                 border-radius: 50%;
-                width: 60px;
-                height: 60px;
+                width: 60px; height: 60px;
                 animation: spin 1s linear infinite;
-                margin-top: 30px;
-                margin-bottom: 20px;
+                margin-top: 30px; margin-bottom: 20px;
             }}
-
             @keyframes spin {{
                 0% {{ transform: rotate(0deg); }}
                 100% {{ transform: rotate(360deg); }}
             }}
-            
-            /* Teks Putih untuk Dark Mode */
             .loader-title {{
-                font-size: 2.5em;
-                font-weight: 700;
-                color: #ffffff;
-                margin-bottom: 10px;
-                text-align: center;
+                font-size: 2.5em; font-weight: 700; color: #ffffff;
+                margin-bottom: 10px; text-align: center;
             }}
             .loader-caption {{
-                font-size: 1.2em;
-                color: #cccccc;
-                font-style: italic;
-                text-align: center;
-                margin-bottom: 20px;
+                font-size: 1.2em; color: #cccccc; font-style: italic;
+                text-align: center; margin-bottom: 20px;
             }}
              .status-text {{
-                font-size: 1em;
-                font-weight: 500;
-                color: #4CAF50;
-                margin-top: 10px;
-                text-align: center;
+                font-size: 1em; font-weight: 500; color: #4CAF50;
+                margin-top: 10px; text-align: center;
             }}
         </style>
         """, unsafe_allow_html=True)
 
-        # --- HTML LOADER ---
+        # HTML Structure
         st.markdown(f"""
             <div class="loader-wrapper">
                 <div class="logo-container">
@@ -118,28 +100,27 @@ if "is_loaded" not in st.session_state:
             </div>
         """, unsafe_allow_html=True)
 
-        status_text_placeholder = st.empty()
+        status_text = st.empty()
 
-        # --- ANIMASI LOADING ---
+        # Simulasi Loading
         for i in range(100):
-            time.sleep(0.02) 
-            
-            if i == 10:
-                status_text_placeholder.markdown("<p class='status-text'>🔄 Menghubungkan ke Database...</p>", unsafe_allow_html=True)
-            elif i == 40:
-                status_text_placeholder.markdown("<p class='status-text'>📂 Memuat Data Project & Inventaris...</p>", unsafe_allow_html=True)
-            elif i == 70:
-                status_text_placeholder.markdown("<p class='status-text'>🧵 Sinkronisasi Data Penjahit...</p>", unsafe_allow_html=True)
-            elif i == 95:
-                status_text_placeholder.markdown("<p class='status-text'>✅ Siap!</p>", unsafe_allow_html=True)
+            time.sleep(0.015) # Percepat sedikit biar responsif
+            if i == 10: status_text.markdown("<p class='status-text'>🔄 Menghubungkan ke Database...</p>", unsafe_allow_html=True)
+            elif i == 50: status_text.markdown("<p class='status-text'>📂 Memuat Data Project & Inventaris...</p>", unsafe_allow_html=True)
+            elif i == 90: status_text.markdown("<p class='status-text'>✅ Siap!</p>", unsafe_allow_html=True)
 
         time.sleep(0.5)
-        
+
+    # 3. SET FLAG: "Sudah pernah loading di sesi ini"
+    st.session_state["first_load_done"] = True
+    
+    # 4. Hapus Loader & Refresh Halaman untuk memunculkan konten asli & sidebar
     loader_container.empty()
-    st.session_state["is_loaded"] = True
+    st.rerun()
 
 # =========================================
-# 3. KODE DASHBOARD UTAMA
+# 3. KONTEN DASHBOARD UTAMA
+# (Kode di bawah ini HANYA JALAN jika first_load_done == True)
 # =========================================
 
 st.title("🚀 Dashboard Manajerial")
@@ -149,7 +130,7 @@ conn = get_connection()
 conn.row_factory = None
 c = conn.cursor()
 
-# --- A. KEY METRICS ---
+# --- A. METRICS ---
 total_omzet = c.execute("SELECT SUM(price_per_item * amount) FROM projects").fetchone()[0] or 0
 total_spend = c.execute("SELECT SUM(price) FROM purchases").fetchone()[0] or 0
 net_profit = total_omzet - total_spend
@@ -184,11 +165,7 @@ with col_chart1:
     df_finance = pd.read_sql_query(query_finance, conn)
     
     if not df_finance.empty:
-        st.bar_chart(
-            df_finance.set_index("project_name"),
-            color=["#36A2EB", "#FF6384"],
-            stack=False
-        )
+        st.bar_chart(df_finance.set_index("project_name"), color=["#36A2EB", "#FF6384"], stack=False)
     else:
         st.info("Belum ada data keuangan.")
 
