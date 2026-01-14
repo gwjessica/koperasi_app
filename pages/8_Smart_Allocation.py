@@ -1,16 +1,12 @@
 import streamlit as st
 import time
-# Sekarang kita bisa import karena allocation.py sudah satu folder
+from datetime import date
 from allocation import hitung_rekomendasi 
 
-st.set_page_config(page_title="Smart Allocation", page_icon="🤖")
+st.set_page_config(page_title="Smart Allocation", page_icon="🤖", layout="wide")
 
 st.title("🤖 AI Smart Allocation")
-st.markdown("""
-Fitur ini menggabungkan:
-1.  **Data Skill** (dari CSV Machine Learning)
-2.  **Ketersediaan Real-time** (dari Database Koperasi)
-""")
+st.markdown("Sistem rekomendasi penjahit berbasis **Deadline Matematister** dan **Kapasitas Real-time**.")
 
 st.divider()
 
@@ -25,39 +21,54 @@ with st.form("form_cari"):
             ["Seragam Sekolah", "Seragam Pramuka", "Rok Seragam", "Kemeja/Batik", "Custom/Gamis/Sulit"])
     with col2:
         pcs = st.number_input("Jumlah Pcs", 1, 1000, 50)
-        deadline = st.radio("Kondisi Deadline", ["Santai (Normal)", "Urgent (Buru-buru!)"])
+        # GANTI RADIO BUTTON DENGAN DATE INPUT
+        deadline_date = st.date_input("Tanggal Deadline", min_value=date.today())
     
-    btn_cari = st.form_submit_button("🔍 Cari Penjahit Terbaik")
+    btn_cari = st.form_submit_button("🔍 Kalkulasi & Cari Penjahit")
 
 # --- HASIL REKOMENDASI ---
 if btn_cari:
-    with st.spinner("Mengecek database & menghitung skor kecocokan..."):
-        time.sleep(0.5) # Gimmick loading
+    with st.spinner("Menghitung hari kerja & kapasitas produksi..."):
+        time.sleep(0.5) 
         
         try:
-            # Panggil fungsi dari allocation.py
-            df_hasil, pesan = hitung_rekomendasi(jenis, pcs, deadline)
+            # Pass tanggal deadline ke fungsi
+            df_hasil, pesan = hitung_rekomendasi(jenis, pcs, deadline_date)
             
-            st.success(f"Analisis Selesai! {pesan}")
+            # Tampilkan Pesan Strategi
+            st.success("Kalkulasi Selesai!")
+            st.info(pesan)
             
             # Highlight Penjahit Terbaik
             if not df_hasil.empty:
                 top = df_hasil.iloc[0]
-                st.info(f"🏆 Rekomendasi Utama: **{top['Nama']}** (Status: {top['Status Saat Ini'].upper()})")
+                
+                # Cek apakah rekomendasi utama sanggup?
+                sanggup_icon = "✅" if top['Sanggup?'] else "⚠️"
+                status_msg = f"{top['Status'].upper()}"
+                
+                if not top['Sanggup?']:
+                    st.warning(f"⚠️ Peringatan: Rekomendasi teratas ({top['Nama']}) mungkin butuh lembur/bantuan karena speed pas-pasan.")
+                
+                st.markdown(f"""
+                ### 🏆 Rekomendasi Utama: **{top['Nama']}**
+                - **Status:** {status_msg}
+                - **Kapasitas:** {top['Max Speed (Pcs/Hari)']:.1f} pcs/hari
+                - **Prediksi:** {sanggup_icon} {'Sanggup Kejar Tayang' if top['Sanggup?'] else 'Resiko Terlambat'}
+                """)
             
             # Tampilkan Tabel
             st.dataframe(
                 df_hasil.style.format({
                     "FINAL_SCORE": "{:.2f}",
-                    "Est. Speed (Pcs/Hari)": "{:.1f}",
+                    "Max Speed (Pcs/Hari)": "{:.1f}",
                     "Jarak (Km)": "{:.1f}"
                 }).background_gradient(subset=['FINAL_SCORE'], cmap="Greens"),
                 use_container_width=True,
                 height=500
             )
             
-            st.caption("💡 Catatan: Penjahit dengan status 'working' mendapat pengurangan skor drastis agar tidak dipilih.")
+            st.caption("💡 **Catatan:** Kolom 'Sanggup?' menghitung apakah Speed Harian Penjahit >= Target Harian Project.")
             
         except Exception as e:
             st.error(f"Terjadi kesalahan: {e}")
-            st.warning("Pastikan file 'DATA_FINAL_CLUSTERED.csv' ada dan nama penjahit di Database sesuai dengan CSV.")
