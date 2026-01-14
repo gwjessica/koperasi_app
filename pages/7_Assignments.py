@@ -145,12 +145,12 @@ with tab2:
                             # 2. Update Status Penjahit -> Working
                             c.execute("UPDATE tailors SET status='working' WHERE id=?", (sel_tailor_id,))
 
-                            c.execute("""
-                            UPDATE assignments SET a.payment_amount = (p.tailor_fee_per_item * ?)
-                            FROM assignments a
-                            JOIN projects p ON a.project_id = p.id
-                            WHERE a.id = MAX(SELECT id FROM assignments)
-                            """)
+                            # c.execute("""
+                            # UPDATE assignments SET a.payment_amount = (p.tailor_fee_per_item * ?)
+                            # FROM assignments a
+                            # JOIN projects p ON a.project_id = p.id
+                            # WHERE a.id = MAX(SELECT id FROM assignments)
+                            # """)
                             
                             conn.commit()
                             st.success(f"Tugas berhasil diberikan kepada penjahit ID {sel_tailor_id}!")
@@ -200,11 +200,11 @@ with tab2:
                         val_upah = 0.0 if pd.isna(curr_row["Upah"]) else float(curr_row["Upah"])
                         # new_pay = st.number_input("Upah Cair (Rp)", value=val_upah, step=5000.0)
                         
-                        tailor_fee = c.execute("SELECT tailor_fee_per_item FROM projects WHERE id=?", (sel_proj_id,))
+                        # tailor_fee = c.execute("SELECT tailor_fee_per_item FROM projects WHERE id=?", (sel_proj_id,))
                     
                     if st.form_submit_button("Simpan Perubahan"):
                         # Update Assignment
-                        c.execute("UPDATE assignments SET amount_assigned=?, status=?, payment_amount=? WHERE id=?", (new_amount, new_status, new_amount * tailor_fee, sel_assign_id))
+                        c.execute("UPDATE assignments SET amount_assigned=?, status=? WHERE id=?", (new_amount, new_status, sel_assign_id))
                         
                         # LOGIC PENTING: Jika status berubah jadi 'paid', bebaskan penjahit (idle)
                         if new_status == 'paid' and curr_row["Status"] != 'paid':
