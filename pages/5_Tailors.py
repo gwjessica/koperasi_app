@@ -272,10 +272,12 @@ with tab3:
     hist_df = pd.read_sql_query("""
         SELECT 
             a.id AS "Assignment ID",
-            p.project_name AS "Project Name",
-            a.amount_assigned AS "Amount",
+            p.project_name AS "Project",
+            p.order_date AS "Tanggal Order",
+            p.deadline AS "Deadline",
+            a.amount_assigned AS "Jumlah Dijahit",
             a.status AS "Status",
-            a.payment_amount AS "Payment Amount"
+            (a.amount_assigned * p.tailor_fee_per_item) AS Bayaran
         FROM assignments a
         JOIN tailors t on a.tailor_id = t.id
         JOIN projects p on p.id = a.project_id
@@ -283,22 +285,58 @@ with tab3:
         WHERE t.id = ?
         ORDER BY a.id DESC
     """, conn, params=(tailor_id,))
+    st.dataframe(
+        hist_df.style.format({
+            "Bayaran": "Rp {:,.0f}",
+        }), 
+        use_container_width=True
+    )
 
     if hist_df.empty:
         st.info("Belum ada assignment untuk penjahit ini.")
     else:
-        st.dataframe(
-            hist_df,
-            column_config={
-                "status": st.column_config.SelectboxColumn(
-                    "Status",
-                    options=["ongoing", "finished", "paid"]
-                ),
-                "total_price": st.column_config.NumberColumn(
-                    "Total",
-                    format="Rp %.0f"
-                )
-            },
-            use_container_width=True,
-            hide_index=True
-        )
+        total_project = hist_df["Assignment ID"].nunique()
+        total_bayaran = hist_df["Bayaran"].sum()
+        total_paid = hist_df[hist_df["Status"] == "paid"]["Bayaran"].sum()
+        hist_df["Tanggal Order"] = pd.to_datetime(hist_df["Tanggal Order"])
+        hist_df["Deadline"] = pd.to_datetime(hist_df["Deadline"])
+        hist_df["durasi_hari"] = (hist_df["Deadline"] - hist_df["Tanggal Order"]).dt.days
+        hist_df["durasi_hari"] = hist_df["durasi_hari"].clip(lower=1)
+
+        hist_df["speed"] = float(hist_df["Jumlah Dijahit"] / hist_df["durasi_hari"])
+
+        avg_speed = hist_df["speed"].mean()
+
+        st.markdown("### 📊 Ringkasan Kinerja Penjahit")
+
+        c1, c2, c3, c4 = st.columns(4)
+
+        with c1:
+            st.metric("🧵 Total Project", total_project)
+
+        with c2:
+            st.metric("💰 Total Bayaran", f"Rp {total_bayaran:,.0f}")
+
+        with c3:
+            st.metric("🪙 Total Sudah Dibayar", f"Rp {total_paid:,.0f}")
+
+        with c4:
+            st.metric("⚡ Rata-rata Kecepatan", f"{avg_speed:.1f} pcs/hari")
+
+
+    # else:
+    #     st.dataframe(
+    #         hist_df,
+    #         column_config={
+    #             "status": st.column_config.SelectboxColumn(
+    #                 "Status",
+    #                 options=["ongoing", "finished", "paid"]
+    #             ),
+    #             "total_price": st.column_config.NumberColumn(
+    #                 "Total",
+    #                 format="Rp %.0f"
+    #             )
+    #         },
+    #         use_container_width=True,
+    #         hide_index=True
+    #     )
