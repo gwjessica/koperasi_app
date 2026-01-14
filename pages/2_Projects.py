@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 from db import get_connection
 from datetime import date
+import plotly.express as px
+import altair as alt
 
 st.set_page_config(page_title="Projects", page_icon="📦", layout="wide")
 
@@ -22,6 +24,7 @@ SELECT
     p.customer_name AS "Customer",
     p.clothes_type AS "Jenis",
     p.amount AS "Jumlah (pcs)",
+    p.order_date AS "Order Date",
     p.deadline AS "Deadline",
     p.status AS "Status",
     p.notes AS "Catatan",
@@ -38,6 +41,13 @@ GROUP BY p.id
 ORDER BY p.id DESC;
 """
 df_projects = pd.read_sql_query(query_main, conn)
+df_projects["Biaya Jahit / Item"] = df_projects["Biaya Jahit / Item"].fillna(0.0)
+df_projects["Harga Dasar"] = df_projects["Harga Dasar"].fillna(0.0)
+df_projects["Total Biaya"] = df_projects["Total Biaya"].fillna(df_projects["Harga Dasar"] + (df_projects["Biaya Jahit / Item"] * df_projects["Jumlah (pcs)"]))
+
+df_projects["Harga Jual / Item"] = df_projects["Harga Jual / Item"].fillna(0.0)
+df_projects["Total Pendapatan"] = df_projects["Total Pendapatan"].fillna(df_projects["Harga Jual / Item"] * df_projects["Jumlah (pcs)"])
+df_projects["Total Keuntungan"] = df_projects["Total Keuntungan"].fillna(df_projects["Total Pendapatan"] - df_projects["Total Biaya"])
 
 # Konversi Deadline ke datetime agar bisa di-sort
 # df_projects["Deadline"] = pd.to_datetime(df_projects["Deadline"])
@@ -45,7 +55,7 @@ df_projects = pd.read_sql_query(query_main, conn)
 # =========================================
 # 2. TABS LAYOUT
 # =========================================
-tab1, tab2 = st.tabs(["📊 Dashboard Analitik", "🛠️ Manajemen Project"])
+tab1, tab2, tab3 = st.tabs(["📊 Dashboard Analitik", "🛠️ Manajemen Project", "📆 Timeline Project"])
 
 # ------------------------------------------------------------------
 # TAB 1: DASHBOARD
@@ -73,12 +83,47 @@ with tab1:
         # --- Charts Row 1 ---
         c1, c2 = st.columns([2, 1])
 
+        # --- GANTI BAGIAN INI ---
         with c1:
-            st.subheader("💰 Perbandingan Biaya vs Keuntungan")
-            # Simple Bar Chart: Project vs Profit
-            chart_data = df_projects[["Nama Project", "Total Biaya", "Total Keuntungan"]].set_index("Nama Project").head(10)
-            st.bar_chart(chart_data, color=["#FF6C6C", "#4CAF50"]) 
-            st.caption("Merah: Biaya Produksi | Hijau: Keuntungan")
+            st.subheader("💰 Perbandingan Biaya vs Pendapatan")
+            
+            # 1. Siapkan Data (Ambil 10 project terakhir)
+            # Kita ambil kolom yang dibutuhkan
+            source = df_projects[["Nama Project", "Total Biaya", "Total Pendapatan"]].head(10)
+            
+            # 2. Ubah Data jadi format Panjang (Melt) agar bisa dikelompokkan
+            # Ini teknik wajib kalau mau bikin grouped bar chart
+            source_melt = source.melt(
+                id_vars=["Nama Project"], 
+                value_vars=["Total Biaya", "Total Pendapatan"],
+                var_name="Kategori", 
+                value_name="Nominal"
+            )
+
+            # 3. Buat Chart dengan Altair
+            chart = alt.Chart(source_melt).mark_bar().encode(
+                # Sumbu X: Nama Project
+                x=alt.X('Nama Project:N', axis=alt.Axis(labelAngle=-45, title=None)),
+                
+                # Sumbu Y: Nominal Uang
+                y=alt.Y('Nominal:Q', axis=alt.Axis(title='Rupiah (Rp)')),
+                
+                # Warna: Merah untuk Biaya, Hijau untuk Keuntungan
+                color=alt.Color('Kategori:N', 
+                                scale=alt.Scale(
+                                    domain=['Total Biaya', 'Total Pendapatan'], 
+                                    range=['#FF6C6C', '#4CAF50'] # Merah, Hijau
+                                ),
+                                legend=alt.Legend(title="Indikator")),
+                
+                # --- KUNCI AGAR SEBELAHAN (SIDE-BY-SIDE) ---
+                xOffset='Kategori:N', 
+                
+                # Tooltip (Biar muncul angka saat di-hover mouse)
+                tooltip=['Nama Project', 'Kategori', alt.Tooltip('Nominal:Q', format=',.0f')]
+            ).interactive()
+
+            st.altair_chart(chart, use_container_width=True)
 
         with c2:
             st.subheader("👕 Distribusi Jenis")
@@ -102,9 +147,9 @@ with tab2:
             
             with col_b:
                 deadline = st.date_input("Deadline", min_value=date.today())
-                base_fee = st.number_input("Biaya Dasar (Pola/Listrik)", min_value=0, step=1000)
-                tailor_fee = st.number_input("Upah Jahit / Item", min_value=0, step=1000)
-                price = st.number_input("Harga Jual / Item", min_value=0, step=1000)
+                base_fee = st.number_input("Biaya Dasar (Pola/Listrik)", min_value=0.0, step=1000.0)
+                tailor_fee = st.number_input("Upah Jahit / Item", min_value=0.0, step=1000.0)
+                price = st.number_input("Harga Jual / Item", min_value=0.0, step=1000.0)
             
             notes = st.text_area("Catatan Tambahan")
             submitted = st.form_submit_button("Simpan Project")
@@ -182,3 +227,48 @@ with tab2:
             conn.commit()
             st.error("Project dihapus.")
             st.rerun()
+
+with tab3:
+    cal_df = df_projects.copy()
+
+    # Pastikan tanggal bertipe datetime
+    cal_df["Deadline"] = pd.to_datetime(cal_df["Deadline"])
+    cal_df["Order Date"] = pd.to_datetime(cal_df.get("Order Date", None))
+
+    # Kalau order_date belum ada di SELECT, pakai fallback
+    if "Order Date" not in cal_df.columns:
+        cal_df["Order Date"] = cal_df["Deadline"] - pd.Timedelta(days=7)
+
+    st.subheader("📅 Timeline Project Produksi")
+    st.caption("Visualisasi durasi kerja setiap project dari order sampai deadline")
+
+    if cal_df.empty:
+        st.info("Belum ada project.")
+    else:
+        fig = px.timeline(
+            cal_df,
+            x_start="Order Date",
+            x_end="Deadline",
+            y="Nama Project",
+            color="Status",
+            color_discrete_map={
+                "ongoing": "#FFA726",
+                "done": "#66BB6A"
+            },
+            hover_data=[
+                "Customer",
+                "Jenis",
+                "Jumlah (pcs)",
+                "Total Keuntungan"
+            ]
+        )
+
+        fig.update_yaxes(autorange="reversed")
+        fig.update_layout(
+            height=500 + len(cal_df) * 15,
+            xaxis_title="Tanggal",
+            yaxis_title="Project",
+            legend_title="Status"
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
