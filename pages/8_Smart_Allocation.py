@@ -2,6 +2,8 @@ import streamlit as st
 import pandas as pd
 import time
 import math
+import urllib.parse
+import random
 from datetime import date
 from allocation import hitung_rekomendasi 
 
@@ -11,6 +13,36 @@ st.title("🤖 AI Smart Allocation")
 st.markdown("Sistem rekomendasi penjahit berbasis **Deadline Matematis** dan **Kapasitas Real-time**.")
 
 st.divider()
+
+# --- FUNGSI GENERATOR LINK WA ---
+def add_whatsapp_link(df, nama_project, pcs_total):
+    """
+    Menambahkan kolom Link WA ke dataframe.
+    """
+    # Pastikan kita bekerja pada copy agar tidak error settingwithcopy
+    df = df.copy()
+    
+    def generate_link(row):
+        # 1. Dummy Nomor HP (Ganti dengan row['No HP'] jika ada kolom aslinya)
+        nomor_hp = f"62812{random.randint(10000000, 99999999)}" 
+        
+        # 2. Template Pesan
+        tugas_pcs = row.get('Tugas (Pcs)', pcs_total) 
+        
+        pesan = f"""Halo Ibu/Mbak *{row['Nama']}*,
+        
+Kami dari Admin Koperasi. Anda terpilih untuk project:
+👕 *Project:* {nama_project}
+📦 *Target:* {tugas_pcs} Pcs
+📅 *Deadline:* Segera
+        
+Mohon konfirmasinya. Terima kasih."""
+        
+        pesan_encoded = urllib.parse.quote(pesan)
+        return f"https://wa.me/{nomor_hp}?text={pesan_encoded}"
+
+    df['Link WA'] = df.apply(generate_link, axis=1)
+    return df
 
 # ==========================================
 # 0. INISIALISASI SESSION STATE
@@ -23,6 +55,8 @@ if "input_pcs" not in st.session_state:
     st.session_state.input_pcs = 0
 if "input_deadline" not in st.session_state:
     st.session_state.input_deadline = date.today()
+if "project_name" not in st.session_state:
+    st.session_state.project_name = "Project Baru"
 
 # ==========================================
 # 1. FORM INPUT
@@ -36,24 +70,22 @@ with st.form("form_cari"):
         jenis = st.selectbox("Jenis Kategori", 
             ["Seragam Sekolah", "Seragam Pramuka", "Rok Seragam", "Kemeja/Batik", "Custom/Gamis/Sulit"])
     with col2:
-        # Input Unlimited
         pcs = st.number_input("Jumlah Pcs", 1, 1000000, 100) 
         deadline_date = st.date_input("Tanggal Deadline", min_value=date.today())
     
     btn_cari = st.form_submit_button("🔍 Kalkulasi & Cari Solusi")
 
-# LOGIKA UTAMA
 if btn_cari:
     with st.spinner("Menghitung kapasitas & menyusun tim..."):
         time.sleep(0.5) 
         try:
             df_hasil, pesan = hitung_rekomendasi(jenis, pcs, deadline_date)
             
-            # SIMPAN KE SESSION STATE
             st.session_state.search_done = True
             st.session_state.df_hasil = df_hasil
             st.session_state.input_pcs = pcs
             st.session_state.input_deadline = deadline_date
+            st.session_state.project_name = project_name
             
         except Exception as e:
             st.error(f"Terjadi kesalahan sistem: {e}")
@@ -66,6 +98,7 @@ if st.session_state.search_done and st.session_state.df_hasil is not None:
     df_hasil = st.session_state.df_hasil
     pcs_val = st.session_state.input_pcs
     deadline_val = st.session_state.input_deadline
+    proj_name = st.session_state.project_name
     
     hari_sisa = (deadline_val - date.today()).days
     if hari_sisa <= 0: hari_sisa = 1
@@ -76,6 +109,7 @@ if st.session_state.search_done and st.session_state.df_hasil is not None:
         is_single_capable = top['Sanggup?']
         
         # --- BAGIAN A: REKOMENDASI UTAMA (SOLO) ---
+        # Layout tetap bersih seperti awal (Text & Metrics saja)
         with st.container():
             st.success("✅ Analisis Selesai!")
             st.info(f"""
@@ -93,20 +127,27 @@ if st.session_state.search_done and st.session_state.df_hasil is not None:
                 st.error(f"⚠️ Tidak ada penjahit yang sanggup mengerjakan {pcs_val} pcs sendirian dalam {hari_sisa} hari!")
                 st.markdown(f"**Kandidat Terbaik (Solo):** {top['Nama']} (Hanya mampu {top['Max Speed (Pcs/Hari)']:.1f} pcs/hari)")
 
+        # Tabel Top 10 (WA Link disisipkan rapi di sini)
         with st.expander("Lihat Detail Top 10 Kandidat Individu", expanded=not is_single_capable):
+            # Tambah link WA ke df_hasil (hanya untuk display)
+            df_display = add_whatsapp_link(df_hasil.head(10), proj_name, pcs_val)
+            
             st.dataframe(
-                df_hasil.head(10).style.format({
-                    "FINAL_SCORE": "{:.2f}",
-                    "Max Speed (Pcs/Hari)": "{:.1f}",
-                    "Jarak (Km)": "{:.1f}"
-                }).background_gradient(subset=['FINAL_SCORE'], cmap="Greens"),
+                df_display,
+                column_config={
+                    "Link WA": st.column_config.LinkColumn(
+                        "Hubungi", display_text="📲 Chat"
+                    ),
+                    "FINAL_SCORE": st.column_config.NumberColumn("Score", format="%.2f"),
+                    "Max Speed (Pcs/Hari)": st.column_config.NumberColumn("Speed", format="%.1f"),
+                    "Jarak (Km)": st.column_config.NumberColumn("Jarak", format="%.1f")
+                },
                 use_container_width=True
             )
 
         st.divider()
 
-        # --- BAGIAN B: SIMULASI SPLIT ORDER (CUSTOM) ---
-        
+        # --- BAGIAN B: SIMULASI SPLIT ORDER (LAYOUT AWAL YANG RAPI) ---
         if is_single_capable:
             st.subheader("⚡ Opsi Alternatif: Custom Split Order")
             st.caption("Bagi beban kerja ke beberapa orang agar lebih ringan.")
@@ -114,34 +155,28 @@ if st.session_state.search_done and st.session_state.df_hasil is not None:
             st.subheader("🤝 Solusi Wajib: Rekomendasi Tim")
             st.caption("Satu orang tidak sanggup. Gunakan tim di bawah ini.")
 
+        # Layout Split: Input Kiri, Hasil Kanan (Sesuai request awal)
         col_sim1, col_sim2 = st.columns([1, 2])
         
         with col_sim1:
             st.markdown("##### ⚙️ Atur Beban Kerja")
-            
-            # [PERBAIKAN 1]: Max Value dibuat unlimited (1 Juta) agar user bebas input > 1
             max_beban_user = st.number_input(
                 "Maksimal Pcs per Orang:", 
-                min_value=1,              # Bisa input 1, 2, 3...
-                max_value=1000000,        # Batas atas sangat tinggi
+                min_value=1, max_value=1000000,
                 value=int(pcs_val) if not is_single_capable else int(pcs_val/2),
                 step=10,
-                help="Sistem akan memastikan TIDAK ADA penjahit yang mendapat tugas lebih dari angka ini."
+                help="Sistem akan memastikan beban per orang tidak melebihi angka ini."
             )
         
         with col_sim2:
-            # 1. Hitung butuh berapa orang
-            # Pastikan max_beban_user tidak 0 (untuk menghindari division by zero)
+            # --- LOGIKA HITUNG TIM (STRICT CAPPING) ---
             safe_max_beban = max(1, max_beban_user)
             jumlah_org_butuh = math.ceil(pcs_val / safe_max_beban)
             
             candidates = df_hasil[df_hasil['Status'] == 'idle'].copy()
-            
-            # Ambil Top N orang
             team = candidates.head(jumlah_org_butuh)
             current_speed = team['Max Speed (Pcs/Hari)'].sum()
             
-            # Cek Speed Target (Jika kurang, tambah orang)
             while current_speed < target_speed and len(team) < len(candidates):
                 jumlah_org_butuh += 1
                 team = candidates.head(jumlah_org_butuh)
@@ -152,14 +187,48 @@ if st.session_state.search_done and st.session_state.df_hasil is not None:
                 final_team.append(row)
 
             if final_team:
-                df_team = pd.DataFrame(final_team).reset_index(drop=True)
-                total_cap = df_team['Max Speed (Pcs/Hari)'].sum()
-                est_days = pcs_val / total_cap if total_cap > 0 else 999
+                # --- LOGIKA DISTRIBUSI TUGAS (WATER FILLING) ---
+                total_speed_team = sum([p['Max Speed (Pcs/Hari)'] for p in final_team])
+                temp_allocations = []
+                for p in final_team:
+                    ideal_share = (p['Max Speed (Pcs/Hari)'] / total_speed_team) * pcs_val
+                    capped_share = min(ideal_share, safe_max_beban) 
+                    temp_allocations.append(capped_share)
                 
-                st.info(f"""
-                **Hasil Simulasi:**
-                Membatasi max **{safe_max_beban} pcs/orang** ➝ Butuh **{len(final_team)} Penjahit**.
-                """)
+                allocations = [int(x) for x in temp_allocations]
+                
+                remaining_pcs = pcs_val - sum(allocations)
+                sorted_indices = sorted(range(len(final_team)), key=lambda k: final_team[k]['Max Speed (Pcs/Hari)'], reverse=True)
+                
+                while remaining_pcs > 0:
+                    distributed = False
+                    for idx in sorted_indices:
+                        if remaining_pcs <= 0: break
+                        if allocations[idx] < safe_max_beban:
+                            allocations[idx] += 1
+                            remaining_pcs -= 1
+                            distributed = True
+                    if not distributed: break
+
+                # PREPARE DATA UNTUK TABEL AKHIR
+                dist_data = []
+                for i, member in enumerate(final_team):
+                    row_data = member.to_dict()
+                    row_data['Tugas (Pcs)'] = allocations[i]
+                    dist_data.append(row_data)
+                
+                df_team_final = pd.DataFrame(dist_data)
+                
+                # Tambah Link WA ke Tim
+                df_team_final = add_whatsapp_link(df_team_final, proj_name, pcs_val)
+                
+                # --- DISPLAY METRICS & TABLE ---
+                # Metrics
+                df_team_ori = pd.DataFrame(final_team)
+                total_cap = df_team_ori['Max Speed (Pcs/Hari)'].sum()
+                est_days = pcs_val / total_cap if total_cap > 0 else 999
+
+                st.info(f"Hasil Simulasi: Membatasi max **{safe_max_beban} pcs/orang** ➝ Butuh **{len(final_team)} Penjahit**.")
 
                 m1, m2, m3 = st.columns(3)
                 m1.metric("Kapasitas Tim", f"{total_cap:.1f} pcs/hari", f"Target: {target_speed:.1f}")
@@ -168,72 +237,23 @@ if st.session_state.search_done and st.session_state.df_hasil is not None:
                     m2.metric("Estimasi Selesai", f"{est_days:.1f} Hari", f"✅ Aman (< {hari_sisa} hari)")
                 else:
                     m2.metric("Estimasi Selesai", f"{est_days:.1f} Hari", f"⚠️ Telat", delta_color="inverse")
-                    st.warning("Meski sudah dibagi tim, kapasitas masih kurang. Tambah orang atau undur deadline.")
+                    st.warning("Kapasitas masih kurang. Tambah orang atau undur deadline.")
 
-        # --- [PERBAIKAN UTAMA] LOGIKA PEMBAGIAN TUGAS (STRICT CAPPING) ---
-        st.markdown("##### ⚖️ Saran Pembagian Tugas:")
-        
-        if final_team:
-            dist_data = []
-            
-            # Algoritma "Water Filling" (Strict Cap)
-            # 1. Siapkan wadah (orang) dan kapasitas maksimal mereka
-            team_indices = list(range(len(final_team)))
-            allocations = [0] * len(final_team)
-            remaining_pcs = pcs_val
-            
-            # 2. Distribusi Proporsional dulu (tapi dijaga max_beban)
-            total_speed_team = sum([p['Max Speed (Pcs/Hari)'] for p in final_team])
-            
-            # Hitung 'share' ideal, tapi langsung di-cap di max_beban
-            temp_allocations = []
-            for p in final_team:
-                ideal_share = (p['Max Speed (Pcs/Hari)'] / total_speed_team) * pcs_val
-                # Kunci: Langsung batasi dengan max_beban_user
-                capped_share = min(ideal_share, safe_max_beban) 
-                temp_allocations.append(capped_share)
-            
-            # 3. Hitung sisa yang belum terbagi gara-gara di-cap
-            assigned_so_far = sum([int(x) for x in temp_allocations])
-            remaining_pcs = pcs_val - assigned_so_far
-            
-            allocations = [int(x) for x in temp_allocations]
-            
-            # 4. Jika masih ada sisa, distribusikan ke orang yang BELUM PENUH
-            # Urutkan prioritas berdasarkan speed (kasih ke yg cepat dulu selama belum penuh)
-            
-            # Kita buat list index yang diurutkan dari yang tercepat
-            sorted_by_speed_indices = sorted(range(len(final_team)), key=lambda k: final_team[k]['Max Speed (Pcs/Hari)'], reverse=True)
-            
-            while remaining_pcs > 0:
-                distributed_in_this_loop = False
-                for idx in sorted_by_speed_indices:
-                    if remaining_pcs <= 0: break
-                    
-                    # Cek apakah orang ini masih punya ruang?
-                    if allocations[idx] < safe_max_beban:
-                        allocations[idx] += 1
-                        remaining_pcs -= 1
-                        distributed_in_this_loop = True
-                
-                # Safety break jika semua orang sudah full tapi pcs masih sisa 
-                # (harusnya gak mungkin krn jumlah org dihitung berdasar kapasitas, tapi buat safety)
-                if not distributed_in_this_loop:
-                    st.warning(f"⚠️ Ada sisa {remaining_pcs} pcs yang tidak muat dibagikan karena semua penjahit sudah mentok di {safe_max_beban} pcs. Mohon naikkan sedikit batas maksimalnya.")
-                    break
+                # Table Tim
+                st.markdown("##### ⚖️ Saran Pembagian Tugas & Kontak:")
+                st.dataframe(
+                    df_team_final[['Nama', 'Status', 'Max Speed (Pcs/Hari)', 'Tugas (Pcs)', 'Link WA']],
+                    column_config={
+                        "Link WA": st.column_config.LinkColumn(
+                            "Hubungi", display_text="📲 Chat"
+                        ),
+                        "Max Speed (Pcs/Hari)": st.column_config.NumberColumn("Speed", format="%.1f")
+                    },
+                    use_container_width=True
+                )
 
-            # 5. Render ke Tabel
-            for i, member in enumerate(final_team):
-                dist_data.append({
-                    "Nama Anggota": member['Nama'],
-                    "Tugas (Pcs)": allocations[i], # Ini PASTI <= max_beban_user
-                    "Kapasitas Harian": f"{member['Max Speed (Pcs/Hari)']:.1f}",
-                    "Status": member['Status'].upper()
-                })
-            
-            st.dataframe(pd.DataFrame(dist_data), use_container_width=True)
-        else:
-            st.error("Tidak cukup penjahit tersedia.")
+            else:
+                st.error("Tidak cukup penjahit tersedia.")
 
     else:
         st.warning("Data tidak ditemukan.")
