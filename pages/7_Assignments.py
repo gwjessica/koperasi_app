@@ -30,7 +30,7 @@ SELECT
     t.name AS "Penjahit",
     a.amount_assigned AS "Jml Pcs",
     a.status AS "Status",
-    a.payment_amount AS "Upah",
+    (p.tailor_fee_per_item * a.amount_assigned) AS "Upah",
     p.id as project_id,
     t.id as tailor_id
 FROM assignments a
@@ -144,6 +144,13 @@ with tab2:
                             
                             # 2. Update Status Penjahit -> Working
                             c.execute("UPDATE tailors SET status='working' WHERE id=?", (sel_tailor_id,))
+
+                            c.execute("""
+                            UPDATE assignments SET a.payment_amount = (p.tailor_fee_per_item * ?)
+                            FROM assignments a
+                            JOIN projects p ON a.project_id = p.id
+                            WHERE a.id = MAX(SELECT id FROM assignments)
+                            """)
                             
                             conn.commit()
                             st.success(f"Tugas berhasil diberikan kepada penjahit ID {sel_tailor_id}!")
@@ -165,9 +172,12 @@ with tab2:
             height=400
         )
         
-        st.divider()
-        st.subheader("✏️ Update Status / Edit")
-        
+    st.divider()
+    st.subheader("✏️ Update Status / Edit")
+    
+    col_edit, col_delete = st.columns([1, 2])
+
+    with col_edit:
         if not df_assign.empty:
             with st.expander("Klik untuk update status penugasan", expanded=False):
                 assign_ids = df_assign["id"].tolist()
@@ -186,12 +196,15 @@ with tab2:
                         
                     with col_p:
                         # Handle jika Upah None/NaN di form juga
+                        new_amount = st.number_input("Jumlah", value=curr_row["Jml Pcs"], step=1)
                         val_upah = 0.0 if pd.isna(curr_row["Upah"]) else float(curr_row["Upah"])
-                        new_pay = st.number_input("Upah Cair (Rp)", value=val_upah, step=5000.0)
+                        # new_pay = st.number_input("Upah Cair (Rp)", value=val_upah, step=5000.0)
+                        
+                        tailor_fee = c.execute("SELECT tailor_fee_per_item FROM projects WHERE id=?", (sel_proj_id,))
                     
                     if st.form_submit_button("Simpan Perubahan"):
                         # Update Assignment
-                        c.execute("UPDATE assignments SET status=?, payment_amount=? WHERE id=?", (new_status, new_pay, sel_assign_id))
+                        c.execute("UPDATE assignments SET amount_assigned=?, status=?, payment_amount=? WHERE id=?", (new_amount, new_status, new_amount * tailor_fee, sel_assign_id))
                         
                         # LOGIC PENTING: Jika status berubah jadi 'paid', bebaskan penjahit (idle)
                         if new_status == 'paid' and curr_row["Status"] != 'paid':
@@ -201,3 +214,13 @@ with tab2:
                         conn.commit()
                         st.success("Data berhasil diupdate!")
                         st.rerun()
+        
+    with col_delete:
+        if not df_assign.empty:
+            st.warning("Hapus assignment bersifat permanen")
+        
+        if st.button("Hapus Assignment"):
+            c.execute("DELETE FROM assignments WHERE id=?", (sel_assign_id,))
+            conn.commit()
+            st.error("Project dihapus.")
+            st.rerun()

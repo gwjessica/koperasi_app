@@ -57,7 +57,7 @@ df = pd.read_sql_query("""
 """, conn)
 
 # --- TAB MENU ---
-tab1, tab2 = st.tabs(["📊 Dashboard Analitik", "🛠️ Manajemen Data"])
+tab1, tab2, tab3 = st.tabs(["📊 Dashboard Analitik", "🛠️ Manajemen Data", "📋 History Assignment"])
 
 # ==========================================
 # TAB 1: DASHBOARD & VISUALISASI
@@ -255,3 +255,50 @@ with tab2:
                         conn.commit()
                         st.error("Data Deleted!")
                         st.rerun()
+
+with tab3:
+    st.subheader("📜 Riwayat Assignment Penjahit")
+
+    # Pilih penjahit
+    tailor_map = dict(zip(df['name'], df['id']))
+    selected_tailor = st.selectbox(
+        "Pilih Penjahit",
+        options=tailor_map.keys()
+    )
+
+    tailor_id = tailor_map[selected_tailor]
+
+    # Ambil assignment berdasarkan tailor
+    hist_df = pd.read_sql_query("""
+        SELECT 
+            a.id AS "Assignment ID",
+            p.project_name AS "Project Name",
+            a.amount_assigned AS "Amount",
+            a.status AS "Status",
+            a.payment_amount AS "Payment Amount"
+        FROM assignments a
+        JOIN tailors t on a.tailor_id = t.id
+        JOIN projects p on p.id = a.project_id
+
+        WHERE t.id = ?
+        ORDER BY a.id DESC
+    """, conn, params=(tailor_id,))
+
+    if hist_df.empty:
+        st.info("Belum ada assignment untuk penjahit ini.")
+    else:
+        st.dataframe(
+            hist_df,
+            column_config={
+                "status": st.column_config.SelectboxColumn(
+                    "Status",
+                    options=["ongoing", "finished", "paid"]
+                ),
+                "total_price": st.column_config.NumberColumn(
+                    "Total",
+                    format="Rp %.0f"
+                )
+            },
+            use_container_width=True,
+            hide_index=True
+        )

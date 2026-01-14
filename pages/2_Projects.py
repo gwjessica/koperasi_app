@@ -25,9 +25,9 @@ SELECT
     p.deadline AS "Deadline",
     p.status AS "Status",
     p.notes AS "Catatan",
-    p.tailor_fee_per_item,
-    p.base_fee,
-    p.price_per_item,
+    p.tailor_fee_per_item AS "Biaya Jahit / Item",
+    p.base_fee AS "Harga Dasar",
+    p.price_per_item AS "Harga Jual / Item",
     -- Estimasi Biaya & Profit
     (COALESCE(SUM(pc.price), 0) + p.base_fee + (p.amount * p.tailor_fee_per_item)) AS "Total Biaya",
     (p.price_per_item * p.amount) AS "Total Pendapatan",
@@ -40,7 +40,7 @@ ORDER BY p.id DESC;
 df_projects = pd.read_sql_query(query_main, conn)
 
 # Konversi Deadline ke datetime agar bisa di-sort
-df_projects["Deadline"] = pd.to_datetime(df_projects["Deadline"])
+# df_projects["Deadline"] = pd.to_datetime(df_projects["Deadline"])
 
 # =========================================
 # 2. TABS LAYOUT
@@ -127,48 +127,58 @@ with tab2:
             "Total Biaya": "Rp {:,.0f}",
             "Total Pendapatan": "Rp {:,.0f}",
             "Total Keuntungan": "Rp {:,.0f}",
-            "Harga Jual / item": "Rp {:,.0f}"
+            "Harga Jual / Item": "Rp {:,.0f}",
+            "Biaya Jahit / Item": "Rp {:,.0f}",
+            "Harga Dasar": "Rp {:,.0f}"
         }), 
         use_container_width=True
     )
 
     # --- EDIT / ACTIONS ---
     st.divider()
-    col_edit, col_act = st.columns(2)
-
-    with col_edit:
-        st.subheader("✏️ Edit Project")
-        if not df_projects.empty:
-            proj_list = df_projects["project_id"].tolist()
-            sel_id = st.selectbox("Pilih ID Project", proj_list, format_func=lambda x: f"ID {x} - {df_projects[df_projects['project_id']==x]['Nama Project'].values[0]}")
+    st.subheader("✏️ Edit Project")
+    if not df_projects.empty:
+        proj_list = df_projects["project_id"].tolist()
+        sel_id = st.selectbox("Pilih ID Project", proj_list, format_func=lambda x: f"ID {x} - {df_projects[df_projects['project_id']==x]['Nama Project'].values[0]}")
+        
+        # Ambil data lama
+        curr = df_projects[df_projects["project_id"] == sel_id].iloc[0]
+        
+        with st.form("edit_form"):
+            col_a, col_b = st.columns(2)
+            with col_a:
+                project_name = st.text_input("Nama Project", curr["Nama Project"])
+                customer_name = st.text_input("Nama Customer", curr["Customer"])
+                clothes_type = st.selectbox("Jenis Pakaian", ["seragam sekolah", "seragam pramuka", "rok", "kemeja/batik", "custom/gamis/sulit"])
+                amount = st.number_input("Jumlah (pcs)", min_value=1, step=1, value=curr["Jumlah (pcs)"])
+                notes = st.text_area("Catatan Tambahan", value=curr["Catatan"])
             
-            # Ambil data lama
-            curr = df_projects[df_projects["project_id"] == sel_id].iloc[0]
-            
-            with st.form("edit_form"):
-                n_name = st.text_input("Nama", curr["Nama Project"])
-                n_cust = st.text_input("Customer", curr["Customer"])
-                n_deadline = st.date_input("Deadline", curr["Deadline"])
+            with col_b:
+                deadline = st.date_input("Deadline", min_value=date.today(), value=curr["Deadline"])
+                base_fee = st.number_input("Biaya Dasar (Pola/Listrik)", min_value=0.0, step=1000.0, value=curr["Harga Dasar"])
+                tailor_fee = st.number_input("Upah Jahit / Item", min_value=0.0, step=1000.0, value=curr["Biaya Jahit / Item"])
+                price = st.number_input("Harga Jual / Item", min_value=0.0, step=1000.0, value=curr["Harga Jual / Item"])
                 n_status = st.selectbox("Status", ["ongoing", "done"], index=0 if curr["Status"]=="ongoing" else 1)
-                btn_update = st.form_submit_button("Update Data")
-                
-                if btn_update:
-                    c.execute("UPDATE projects SET project_name=?, customer_name=?, deadline=?, status=? WHERE id=?", (n_name, n_cust, n_deadline, n_status, sel_id))
-                    conn.commit()
-                    st.success("Update berhasil!")
-                    st.rerun()
+            
+            btn_update = st.form_submit_button("Update Data")
+            
+            if btn_update:
+                c.execute("UPDATE projects SET project_name=?, customer_name=?, deadline=?, status=?, clothes_type=?, base_fee=?, tailor_fee_per_item=?, price_per_item=?, amount=?, notes=? WHERE id=?", (project_name, customer_name, deadline, n_status, clothes_type, base_fee, tailor_fee, price, amount, notes, sel_id))
+                conn.commit()
+                st.success("Update berhasil!")
+                st.rerun()
                     
-    with col_act:
-        st.subheader("🗑️ Hapus / Selesai")
-        if not df_projects.empty:
-             if st.button("Tandai Selesai (Quick Action)"):
-                 c.execute("UPDATE projects SET status='done' WHERE id=?", (sel_id,))
-                 conn.commit()
-                 st.rerun()
-             
-             st.warning("Hapus project bersifat permanen.")
-             if st.button("Hapus Project"):
-                 c.execute("DELETE FROM projects WHERE id=?", (sel_id,))
-                 conn.commit()
-                 st.error("Project dihapus.")
-                 st.rerun()
+    
+    st.subheader("🗑️ Hapus / Selesai")
+    if not df_projects.empty:
+        if st.button("Tandai Selesai (Quick Action)"):
+            c.execute("UPDATE projects SET status='done' WHERE id=?", (sel_id,))
+            conn.commit()
+            st.rerun()
+        
+        st.warning("Hapus project bersifat permanen.")
+        if st.button("Hapus Project"):
+            c.execute("DELETE FROM projects WHERE id=?", (sel_id,))
+            conn.commit()
+            st.error("Project dihapus.")
+            st.rerun()
